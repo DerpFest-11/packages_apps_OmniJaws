@@ -55,6 +55,8 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
     private static final String WEATHER_UPDATE = "org.omnirom.omnijaws.WEATHER_UPDATE";
     private static final String WEATHER_ERROR = "org.omnirom.omnijaws.WEATHER_ERROR";
     private static final String EXTRA_ERROR = "error";
+    private static final int EXTRA_ERROR_NETWORK = 0;
+    private static final int EXTRA_ERROR_LOCATION = 1;
     private static final int EXTRA_ERROR_DISABLED = 2;
 
     @Override
@@ -113,7 +115,11 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
         }
         if (action.equals(WEATHER_ERROR)) {
             int errorReason = intent.getIntExtra(EXTRA_ERROR, 0);
-            showErrorState(context, errorReason);
+            if (errorReason == EXTRA_ERROR_DISABLED) {
+                showErrorState(context, errorReason);
+            } else {
+                updateAllWeather(context);
+            }
         }
         super.onReceive(context, intent);
     }
@@ -339,7 +345,7 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
             Context context, AppWidgetManager appWidgetManager, int appWidgetId, int errorReason) {
 
         if (LOGGING) {
-            Log.i(TAG, "showError " + appWidgetId);
+            Log.i(TAG, "showError " + appWidgetId + " errorReason = " + errorReason);
         }
 
         RemoteViews widget = new RemoteViews(context.getPackageName(), R.layout.weather_appwidget);
@@ -353,6 +359,7 @@ public class WeatherAppWidgetProvider extends AppWidgetProvider {
             widget.setViewVisibility(R.id.current_weather_city, View.INVISIBLE);
             widget.setViewVisibility(R.id.current_weather_timestamp, View.INVISIBLE);
         } else {
+            // should never happen
             widget.setTextViewText(R.id.error_marker, context.getResources().getString(R.string.omnijaws_service_error_marker));
             widget.setViewVisibility(R.id.error_marker, View.VISIBLE);
             widget.setViewVisibility(R.id.no_weather_notice, View.GONE);
